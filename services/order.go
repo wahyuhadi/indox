@@ -29,4 +29,8 @@ func GetOrdersDetails(pair string) {
 	ac := accounting.Accounting{Symbol: "RP ", Precision: 2, Thousand: ".", Decimal: ","}
 	logrus.Info("Total order buy  : ", ac.FormatMoney(TOTALBUY))
 	logrus.Info("Total order sell : ", ac.FormatMoney(TOTALSELL))
+	if TOTALBUY > TOTALSELL {
+		logrus.Info("Order Gaps       : ", ac.FormatMoney(TOTALBUY-TOTALSELL))
+		logrus.Info("Gain  Gaps       : ", TOTALBUY/TOTALSELL)
+	}
 }
