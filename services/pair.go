@@ -39,7 +39,10 @@ func DetailsPairs(tickers, currency *string) {
 	if balance > CapsFloat {
 		WinLose = tablewriter.FgHiGreenColor
 	}
-	be := balance - CapsFloat
+	var be float64 = 0
+	if Saldo != 0 {
+		be = balance - CapsFloat
+	}
 	ac := accounting.Accounting{Symbol: "RP ", Precision: 2, Thousand: ".", Decimal: ","}
 
 	data := [][]string{
