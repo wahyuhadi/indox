@@ -63,8 +63,8 @@ func DetailsPairs(tickers, currency *string) {
 	table.SetColumnColor(
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiRedColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiGreenColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
