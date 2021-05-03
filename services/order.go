@@ -36,10 +36,10 @@ func GetOrdersDetails(pair string) {
 	if TOTALBUY > TOTALSELL {
 		logrus.Info("Order Gaps       : ", ac.FormatMoney(TOTALBUY-TOTALSELL))
 		logrus.Info("Gain  Gaps       : ", gaps)
+	} else {
+		logrus.Warn("Order Gaps       : ", ac.FormatMoney(TOTALBUY-TOTALSELL))
+		logrus.Warn("Gain  Gaps       : ", TOTALBUY/TOTALSELL)
 	}
-	logrus.Warn("Order Gaps       : ", ac.FormatMoney(TOTALBUY-TOTALSELL))
-	logrus.Warn("Gain  Gaps       : ", TOTALBUY/TOTALSELL)
-
 	if gaps >= 5 {
 		logrus.Info("Gain Severity    : Very Strong market")
 	}
