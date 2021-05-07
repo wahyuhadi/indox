@@ -105,3 +105,22 @@ func GetOrderBook(pair string) (*indodax.OrderBook, error) {
 	}
 	return orderBook, nil
 }
+
+// -- get summary
+func GetSummaries() (*indodax.Summary, error) {
+	cl, err := indodax.NewClient(
+		os.Getenv("indox_key"),
+		os.Getenv("indox_sec"),
+	)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	summaries, err := cl.GetSummaries()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	return summaries, nil
+}
