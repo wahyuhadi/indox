@@ -15,6 +15,7 @@ import (
 
 var (
 	fiat = flag.String("f", "idr", "fiat idr/usdt")
+	gap  = flag.Float64("g", 2.5, "gaps for order ")
 )
 
 // type Summary struct {
@@ -27,7 +28,8 @@ func Analyze() {
 	logrus.Info("Run analitic")
 	summary, err := ticker.GetSummaries()
 	if err != nil {
-		logrus.Warn("Error when get data ")
+		logrus.Warn("Error when get data summary ")
+		os.Exit(1)
 	}
 
 	data := [][]string{}
@@ -62,7 +64,7 @@ func Analyze() {
 			}
 
 			gaps := TOTALBUY / TOTALSELL
-			if gaps >= 2.5 {
+			if gaps >= *gap {
 				isStrongmarket = true
 			}
 
@@ -76,6 +78,8 @@ func Analyze() {
 						ac.FormatMoney(TOTALSELL),
 						"Strong market",
 						fmt.Sprintf("%f", gaps),
+						ac.FormatMoney(summary.Tickers[i].AssetVolume),
+						ac.FormatMoney(summary.Tickers[i].BaseVolume),
 					},
 				)
 
@@ -85,13 +89,15 @@ func Analyze() {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Date analitic", "Name", "Order Buy", "Order sell", "Details", "Gaps"})
+	table.SetHeader([]string{"Date analitic", "Name", "Order Buy", "Order sell", "Details", "Gaps", "Assets Volume", "Base Volume"})
 	table.SetColumnColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiGreenColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiRedColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
 		tablewriter.Colors{tablewriter.Bold, cgaps},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
 	)
 	table.SetBorder(true)  // Set Border to false
 	table.AppendBulk(data) // Add Bulk Data
