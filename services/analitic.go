@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"indox/ticker"
+	"io/ioutil"
 	"os"
 	"strings"
 	"time"
@@ -14,8 +15,9 @@ import (
 )
 
 var (
-	fiat = flag.String("f", "idr", "fiat idr/usdt")
-	gap  = flag.Float64("g", 2.5, "gaps for order ")
+	fiat  = flag.String("f", "idr", "fiat idr/usdt")
+	gap   = flag.Float64("g", 2.5, "gaps for order ")
+	debug = flag.Bool("db", false, "")
 )
 
 // type Summary struct {
@@ -24,7 +26,11 @@ var (
 //     Prices7d  map[string]float64
 // }
 func Analyze() {
+	log := logrus.New()
 	flag.Parse()
+	if !*debug {
+		log.SetOutput(ioutil.Discard)
+	}
 	logrus.Info("Run analitic")
 	summary, err := ticker.GetSummaries()
 	if err != nil {
@@ -46,6 +52,8 @@ func Analyze() {
 			//currency := fmt.Sprintf("%s%s", idrsummary[0], *fiat)
 			isStrongmarket := false
 			// -- get market price by pairs
+			msg := fmt.Sprintf("Get Order book %s", i)
+			log.Info(msg)
 			orderBook, err := ticker.GetOrderBook(i)
 			if err != nil {
 				continue
@@ -55,16 +63,24 @@ func Analyze() {
 			var TOTALSELL float64 = 0
 
 			// - calculate total buy
+			msg = fmt.Sprintf("Calculate order buy %s", i)
+			log.Info(msg)
 			for _, buy := range orderBook.Buys {
 				TOTALBUY = TOTALBUY + (buy.Amount * buy.Price)
 			}
 			// - calculate total sell
+			msg = fmt.Sprintf("Calculate order sell %s", i)
+			log.Info(msg)
 			for _, sell := range orderBook.Sells {
 				TOTALSELL = TOTALSELL + (sell.Amount * sell.Price)
 			}
 
+			msg = fmt.Sprintf("Counting gaps %s", i)
+			log.Info(msg)
 			gaps := TOTALBUY / TOTALSELL
 			if gaps >= *gap {
+				msg = fmt.Sprintf("Strong market %s", i)
+				log.Info(msg)
 				isStrongmarket = true
 			}
 
