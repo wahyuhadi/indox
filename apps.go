@@ -20,6 +20,7 @@ var (
 	balance           = flag.Bool("b", false, "Get saldo info")
 	analitic          = flag.Bool("a", false, "use analitic")
 	autotrade         = flag.Bool("at", false, "Auto trade")
+	summary           = flag.Bool("s", false, "summary")
 	saldo     float64 = 0
 )
 
@@ -69,16 +70,14 @@ func main() {
 	logrus.Info("Ticker Info")
 
 	flag.Parse()
-	if !*analitic {
-		if !*autotrade {
-			appinit()
-
-			if *tickers == "all" {
-				log.Println("get all ticker")
-			} else {
-				services.DetailsPairs(*&tickers, *&currency)
-			}
+	if *summary {
+		appinit()
+		if *tickers == "all" {
+			log.Println("get all ticker")
+		} else {
+			services.DetailsPairs(*&tickers, *&currency)
 		}
+
 	}
 
 	if *balance {
