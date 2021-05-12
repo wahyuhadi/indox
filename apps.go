@@ -15,11 +15,12 @@ import (
 )
 
 var (
-	tickers          = flag.String("t", "btc", "get all tikcer or spesifications")
-	currency         = flag.String("c", "idr", "currency mode / usd or idr")
-	balance          = flag.Bool("b", false, "Get saldo info")
-	analitic         = flag.Bool("a", false, "use analitic")
-	saldo    float64 = 0
+	tickers           = flag.String("t", "btc", "get all tikcer or spesifications")
+	currency          = flag.String("c", "idr", "currency mode / usd or idr")
+	balance           = flag.Bool("b", false, "Get saldo info")
+	analitic          = flag.Bool("a", false, "use analitic")
+	autotrade         = flag.Bool("at", false, "Auto trade")
+	saldo     float64 = 0
 )
 
 func appinit() {
@@ -69,11 +70,14 @@ func main() {
 
 	flag.Parse()
 	if !*analitic {
-		appinit()
-		if *tickers == "all" {
-			log.Println("get all ticker")
-		} else {
-			services.DetailsPairs(*&tickers, *&currency)
+		if !*autotrade {
+			appinit()
+
+			if *tickers == "all" {
+				log.Println("get all ticker")
+			} else {
+				services.DetailsPairs(*&tickers, *&currency)
+			}
 		}
 	}
 
@@ -83,6 +87,10 @@ func main() {
 
 	if *analitic {
 		services.Analyze()
+	}
+
+	if *autotrade {
+		services.Autotrade()
 	}
 
 }
