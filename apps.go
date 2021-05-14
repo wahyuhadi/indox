@@ -67,7 +67,6 @@ func appinit() {
 }
 
 func main() {
-	logrus.Info("Ticker Info")
 
 	flag.Parse()
 	if *summary {
@@ -81,10 +80,12 @@ func main() {
 	}
 
 	if *balance {
+		logrus.Info("Get ballance")
 		services.GetEstimateBalances()
 	}
 
 	if *analitic {
+		logrus.Info("Run analitic")
 		services.Analyze()
 	}
 
