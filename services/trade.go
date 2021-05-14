@@ -2,7 +2,6 @@ package services
 
 import (
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"indox/ticker"
@@ -29,48 +28,52 @@ func Autotrade() {
 	}
 
 	for items := range getTicker.Tickers {
-		curr := "BTCIDR"
-
 		// -- convert name to tradeview format
 		is_split := strings.Split(items, "_")
+
 		if is_split[1] == *fiat {
+			is_curr := fmt.Sprintf("%s_%s", is_split[0], *fiat)
+
 			tempCurr := fmt.Sprintf("%s%s", is_split[0], *fiat)
-			curr = strings.ToUpper(tempCurr)
+			curr := strings.ToUpper(tempCurr)
+
+			data, err := DOReqTradeView(curr)
+			if err != nil {
+				SetLogger("Warning", "Responses error in func DOReqTradeView() ")
+			}
+
+			// -- in response tradeview url , S always ok if the respose not error message
+			if data.S != "ok" {
+				SetLogger("Warning", "Response in not ok from tradeview Apis")
+				continue
+			}
+
+			last := (getTicker.Tickers[is_curr].Buy)
+
+			// --  calculate the price history with fibonanci
+			big, _ := GetBigest(data.H)
+			log.Println(big, "for ", curr, "last ", last)
 		}
-
-		// -- generate the timestamp
-		now := time.Now() // current local time
-		monthago := now.AddDate(0, -1, 0)
-		to := now.Unix()
-		from := monthago.Unix()
-
-		// -- formating url
-		url := fmt.Sprintf(URI+"symbol=%s&resolution=%s&from=%d&to=%d", curr, RESOLUTION, from, to)
-		data, err := DOReqTradeView(url)
-		if err != nil {
-			SetLogger("Warning", "Responses error in func DOReqTradeView() ")
-		}
-
-		// -- in response tradeview url , S always ok if the respose not error message
-		if data.S != "ok" {
-			SetLogger("Warning", "Response in not ok from tradeview Apis")
-			continue
-		}
-
-		// --  calculate the price history with fibonanci
 	}
 }
 
 // -- make http request to indodax tradeview
 // -- https://indodax.com/tradingview/history
-func DOReqTradeView(url string) (tradeHistory TradeView, err error) {
+func DOReqTradeView(curr string) (tradeHistory TradeView, err error) {
+
+	// -- generate the timestamp
+	now := time.Now() // current local time
+
+	substractday := SubstractDay(*day)
+	monthago := now.AddDate(0, 0, substractday)
+	to := now.Unix()
+	from := monthago.Unix()
+
+	// -- formating url
+	url := fmt.Sprintf(URI+"symbol=%s&resolution=%s&from=%d&to=%d", curr, RESOLUTION, from, to)
+
 	client := &http.Client{
 		Timeout: 10 * time.Second, // - hope is enough
-	}
-
-	// -- dont follow the redirect page
-	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
-		return errors.New("Redirect")
 	}
 
 	req, _ := http.NewRequest("GET", url, nil)
@@ -95,5 +98,11 @@ func DOReqTradeView(url string) (tradeHistory TradeView, err error) {
 
 	// -- return the data
 	return data, err
+}
 
+func SubstractDay(day int) int {
+	if day > 0 {
+		return -1 * day
+	}
+	return day
 }
