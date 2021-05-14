@@ -47,6 +47,7 @@ func Analyze() {
 		// -- makesure use the ticker
 		if idrsummary[1] == *fiat {
 			// data will rendered
+			last := summary.Tickers[i].Last
 
 			ac := accounting.Accounting{Symbol: "RP ", Precision: 2, Thousand: ".", Decimal: ","}
 
@@ -85,6 +86,37 @@ func Analyze() {
 				isStrongmarket = true
 			}
 
+			tempCurr := fmt.Sprintf("%s%s", idrsummary[0], *fiat)
+			curr := strings.ToUpper(tempCurr)
+
+			dataTradeView, err := DOReqTradeView(curr)
+			if err != nil {
+				SetLogger("Warning", "Responses error in func DOReqTradeView() ")
+				continue
+			}
+
+			isdecicion := "Trade"
+			if len(dataTradeView.H) == 0 || len(dataTradeView.L) == 0 {
+				log.Println("continue")
+				continue
+			}
+			high, _ := GetBigest(dataTradeView.H)
+			low, _ := GetSmallest(dataTradeView.L)
+
+			buy, wait, sell := GetPositionWithFibo(low, high, last)
+
+			if buy {
+				isdecicion = "Buy"
+			}
+
+			if wait {
+				isdecicion = "wait"
+			}
+
+			if sell {
+				isdecicion = "sell"
+			}
+
 			if isStrongmarket {
 				// -- if strong  market
 				data = append(data,
@@ -97,6 +129,7 @@ func Analyze() {
 						fmt.Sprintf("%f", gaps),
 						ac.FormatMoney(summary.Tickers[i].AssetVolume),
 						ac.FormatMoney(summary.Tickers[i].BaseVolume),
+						isdecicion,
 					},
 				)
 
@@ -106,13 +139,14 @@ func Analyze() {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Date analitic", "Name", "Order Buy", "Order sell", "Details", "Gaps", "Assets Volume", "Base Volume"})
+	table.SetHeader([]string{"Date analitic", "Name", "Order Buy", "Order sell", "Details", "Gaps", "Assets Volume", "Base Volume", "Action"})
 	table.SetColumnColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiGreenColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiRedColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
 		tablewriter.Colors{tablewriter.Bold, cgaps},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
 	)
