@@ -18,7 +18,6 @@ var (
 	fiat  = flag.String("f", "idr", "fiat idr/usdt")
 	gap   = flag.Float64("g", 2.5, "gaps for order ")
 	debug = flag.Bool("db", false, "debug log ")
-	day   = flag.Int("d", 30, "analitic time (days)")
 )
 
 // type Summary struct {
