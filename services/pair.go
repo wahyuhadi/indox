@@ -57,10 +57,11 @@ func DetailsPairs(tickers, currency *string) {
 	if len(dataTradeView.H) == 0 || len(dataTradeView.L) == 0 {
 		log.Println("continue")
 	}
-
+	SetLogger("info", "Get high and low prices")
 	high, _ := GetBigest(dataTradeView.H)
 	low, _ := GetSmallest(dataTradeView.L)
 
+	SetLogger("info", "Get fibo position to take action")
 	buy, wait, sell := GetPositionWithFibo(low, high, ticker.Last)
 
 	if buy {
