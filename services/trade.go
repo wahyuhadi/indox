@@ -16,6 +16,7 @@ import (
 var (
 	RESOLUTION = "D" // daily resolution in candlestick
 	URI        = "https://indodax.com/tradingview/history?"
+	day        = flag.Int("d", 1, "analitic time (days)")
 )
 
 func Autotrade() {

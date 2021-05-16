@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/leekchan/accounting"
@@ -44,24 +45,53 @@ func DetailsPairs(tickers, currency *string) {
 		be = balance - CapsFloat
 	}
 	ac := accounting.Accounting{Symbol: "RP ", Precision: 2, Thousand: ".", Decimal: ","}
+	// - get data from tradeview
+	curr := fmt.Sprintf("%s%s", *tickers, *currency)
+	curr = strings.ToUpper(curr)
+	dataTradeView, err := DOReqTradeView(curr)
+	if err != nil {
+		SetLogger("Warning", "Responses error in func DOReqTradeView() ")
+	}
 
+	isdecicion := "Trade"
+	if len(dataTradeView.H) == 0 || len(dataTradeView.L) == 0 {
+		log.Println("continue")
+	}
+
+	high, _ := GetBigest(dataTradeView.H)
+	low, _ := GetSmallest(dataTradeView.L)
+
+	buy, wait, sell := GetPositionWithFibo(low, high, ticker.Last)
+
+	if buy {
+		isdecicion = "Buy"
+	}
+
+	if wait {
+		isdecicion = "wait"
+	}
+
+	if sell {
+		isdecicion = "sell"
+	}
 	data := [][]string{
 		[]string{
 			time.Now().Local().Format("2006.01.02 15:04:05"),
 			ticker.PairName,
 			fmt.Sprintf("%f", ticker.Sell),
 			fmt.Sprintf("%f", ticker.Buy),
-			fmt.Sprintf("%f", ticker.AssetVolume),
 			fmt.Sprintf("%f", ticker.BaseVolume),
 			fmt.Sprintf("%f", ticker.Low),
 			fmt.Sprintf("%f", ticker.High),
 			ac.FormatMoney(be),
 			ac.FormatMoney(balance),
+			isdecicion,
+			fmt.Sprintf("%d", *day),
 		},
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Date", "Name", "Sell", "Buy", "Assets Volume", "Base Volume", "Low", "High", "Win/Lose", "Conv Assets"})
+	table.SetHeader([]string{"Date", "Name", "Sell", "Buy", "Base Volume", "Low", "High", "Win/Lose", "Conv Assets", "Action", "Day"})
 	table.SetBorder(true) // Set Border to false
 	table.SetColumnColor(
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
@@ -71,9 +101,10 @@ func DetailsPairs(tickers, currency *string) {
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
-		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, WinLose},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiCyanColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiCyanColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 	)
 	table.AppendBulk(data) // Add Bulk Data
 	table.Render()
