@@ -22,11 +22,6 @@ var (
 // DetailsPairs() -- get information for ticker
 func DetailsPairs(tickers, currency *string) {
 	flag.Parse()
-	pair := fmt.Sprintf("%s_%s", *tickers, *currency)
-	ticker, err := ticker.IsDoGetPair(pair)
-	if err != nil {
-		log.Println(err)
-	}
 	// - set modal awal trading
 	cap := os.Getenv("indox_init_cap")
 	if cap == "" {
@@ -34,8 +29,27 @@ func DetailsPairs(tickers, currency *string) {
 		os.Exit(1)
 	}
 
+	pair := fmt.Sprintf("%s_%s", *tickers, *currency)
+	tickerpairs, err := ticker.IsDoGetPair(pair)
+	if err != nil {
+		log.Println(err)
+	}
+
+	orderBook, err := ticker.GetOrderBook(pair)
+	if err != nil {
+		log.Println("continue")
+	}
+
+	SetLogger("info", "calculate buy and sell position")
+	buyposition := GetBuySellPosition(orderBook.Buys)
+	sellposition := GetBuySellPosition(orderBook.Sells)
+	msg := fmt.Sprintf("Buy Position in %f", buyposition)
+	logrus.Info(msg)
+	msg = fmt.Sprintf("Sell Position in %f", sellposition)
+	logrus.Info(msg)
+
 	CapsFloat, _ := strconv.ParseFloat(cap, 64)
-	balance := ticker.Buy * Saldo
+	balance := tickerpairs.Buy * Saldo
 	WinLose := tablewriter.FgHiRedColor
 	if balance > CapsFloat {
 		WinLose = tablewriter.FgHiGreenColor
@@ -62,7 +76,7 @@ func DetailsPairs(tickers, currency *string) {
 	low, _ := GetSmallest(dataTradeView.L)
 
 	SetLogger("info", "Get fibo position to take action")
-	buy, wait, sell := GetPositionWithFibo(low, high, ticker.Last)
+	buy, wait, sell := GetPositionWithFibo(low, high, tickerpairs.Last)
 
 	if buy {
 		isdecicion = "Buy"
@@ -78,12 +92,12 @@ func DetailsPairs(tickers, currency *string) {
 	data := [][]string{
 		[]string{
 			time.Now().Local().Format("2006.01.02 15:04:05"),
-			ticker.PairName,
-			fmt.Sprintf("%f", ticker.Sell),
-			fmt.Sprintf("%f", ticker.Buy),
-			fmt.Sprintf("%f", ticker.BaseVolume),
-			fmt.Sprintf("%f", ticker.Low),
-			fmt.Sprintf("%f", ticker.High),
+			tickerpairs.PairName,
+			fmt.Sprintf("%f", tickerpairs.Sell),
+			fmt.Sprintf("%f", tickerpairs.Buy),
+			fmt.Sprintf("%f", tickerpairs.BaseVolume),
+			fmt.Sprintf("%f", tickerpairs.Low),
+			fmt.Sprintf("%f", tickerpairs.High),
 			ac.FormatMoney(be),
 			ac.FormatMoney(balance),
 			isdecicion,
