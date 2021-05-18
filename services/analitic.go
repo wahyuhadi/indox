@@ -81,8 +81,10 @@ func Analyze() {
 			buyposition := GetBuySellPosition(orderBook.Buys)
 			sellposition := GetBuySellPosition(orderBook.Sells)
 
-			log.Info("Buy Position in %f", buyposition)
-			log.Info("Sell Position in %f", sellposition)
+			msg = fmt.Sprintf("Buy Position in %f", buyposition)
+			log.Info(msg)
+			msg = fmt.Sprintf("Sell Position in %f", sellposition)
+			log.Info(msg)
 
 			msg = fmt.Sprintf("Counting gaps %s", i)
 			log.Info(msg)
