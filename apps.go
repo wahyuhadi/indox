@@ -76,11 +76,10 @@ func main() {
 		} else {
 			services.DetailsPairs(*&tickers, *&currency)
 		}
-
 	}
 
 	if *balance {
-		logrus.Info("Get ballance")
+		logrus.Info("Get balance")
 		services.GetEstimateBalances()
 	}
 
