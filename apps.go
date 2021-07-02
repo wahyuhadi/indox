@@ -66,6 +66,7 @@ func appinit() {
 
 }
 
+// main
 func main() {
 
 	flag.Parse()
