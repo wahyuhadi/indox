@@ -22,7 +22,10 @@ func GetEstimateBalances() {
 	for i, item := range user.Balance {
 		if user.Balance[i] > 0 {
 			pairname := fmt.Sprintf("%s_idr", i)
-
+			if pairname == "idr_idr" {
+				balance = user.Balance[i]
+				continue
+			}
 			pair, err := ticker.IsDoGetPair(pairname)
 			if err != nil {
 				log.Println(err)

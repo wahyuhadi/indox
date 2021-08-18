@@ -66,6 +66,7 @@ func appinit() {
 
 }
 
+// mains
 func main() {
 
 	flag.Parse()
@@ -76,11 +77,10 @@ func main() {
 		} else {
 			services.DetailsPairs(*&tickers, *&currency)
 		}
-
 	}
 
 	if *balance {
-		logrus.Info("Get ballance")
+		logrus.Info("Get balance")
 		services.GetEstimateBalances()
 	}
 

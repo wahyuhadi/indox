@@ -3,6 +3,7 @@ package services
 import (
 	"flag"
 	"fmt"
+	"indox/go-indodax"
 	"indox/ticker"
 	"io/ioutil"
 	"os"
@@ -76,6 +77,15 @@ func Analyze() {
 				TOTALSELL = TOTALSELL + (sell.Amount * sell.Price)
 			}
 
+			log.Info("calculate buy and sell position")
+			buyposition := GetBuySellPosition(orderBook.Buys)
+			sellposition := GetBuySellPosition(orderBook.Sells)
+
+			msg = fmt.Sprintf("Buy Position in %f", buyposition)
+			log.Info(msg)
+			msg = fmt.Sprintf("Sell Position in %f", sellposition)
+			log.Info(msg)
+
 			msg = fmt.Sprintf("Counting gaps %s", i)
 			log.Info(msg)
 			gaps := TOTALBUY / TOTALSELL
@@ -103,7 +113,7 @@ func Analyze() {
 			low, _ := GetSmallest(dataTradeView.L)
 
 			buy, wait, sell := GetPositionWithFibo(low, high, last)
-
+			log.Info("Take decition with fibo")
 			if buy {
 				isdecicion = "Buy"
 			}
@@ -129,6 +139,9 @@ func Analyze() {
 						ac.FormatMoney(summary.Tickers[i].AssetVolume),
 						ac.FormatMoney(summary.Tickers[i].BaseVolume),
 						isdecicion,
+						fmt.Sprintf("%d", *day),
+						ac.FormatMoney(buyposition),
+						ac.FormatMoney(sellposition),
 					},
 				)
 
@@ -138,7 +151,7 @@ func Analyze() {
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Date analitic", "Name", "Order Buy", "Order sell", "Details", "Gaps", "Assets Volume", "Base Volume", "Action"})
+	table.SetHeader([]string{"Date analitic", "Name", "Order Buy", "Order sell", "Details", "Gaps", "Assets Volume", "Base Volume", "Action", "day", "buy at", "sell at"})
 	table.SetColumnColor(tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiWhiteColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiGreenColor},
@@ -148,9 +161,25 @@ func Analyze() {
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
 		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
+		tablewriter.Colors{tablewriter.Bold, tablewriter.FgHiYellowColor},
 	)
 	table.SetBorder(true)  // Set Border to false
 	table.AppendBulk(data) // Add Bulk Data
 	table.Render()
 
+}
+
+//  -- return value to buy position based on high order price
+func GetBuySellPosition(buy []*indodax.Order) float64 {
+	var price float64 = buy[0].Price
+	var amounttmp float64 = buy[0].Amount
+	for _, buytmp := range buy {
+		if buytmp.Amount > amounttmp {
+			price = buytmp.Price
+		}
+	}
+	// --return value
+	return price
 }
