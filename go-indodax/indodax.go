@@ -113,9 +113,7 @@ func printDebug(info interface{}) {
 	}
 }
 
-func jsonToMapStringFloat64(in map[string]interface{}) (
-	out map[string]float64, err error,
-) {
+func jsonToMapStringFloat64(in map[string]interface{}) (out map[string]float64, err error) {
 	out = make(map[string]float64, len(in))
 
 	for k, v := range in {
